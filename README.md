@@ -1,4 +1,4 @@
-# Simple IDS
+# Network IDS
 
 A lightweight Intrusion Detection System built with Python and Scapy.
 
