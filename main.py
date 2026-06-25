@@ -1,4 +1,4 @@
-from capture.capture import start_capture
+from capture.engine import start_capture
 
 def main():
     print("=== Simple IDS ===")
