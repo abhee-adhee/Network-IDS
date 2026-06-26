@@ -17,7 +17,12 @@ port_scan_tracker = defaultdict(set)
 # -----------------------------
 
 def syn_flood_rule(packet):
-
+    if packet.protocol == "TCP":
+        return {
+            "type": "TCP Packet",
+            "source": packet.src_ip,
+            "severity": "LOW"
+        }
     if packet.protocol != "TCP":
         return None
 
