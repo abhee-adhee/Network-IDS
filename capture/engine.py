@@ -1,7 +1,7 @@
 from detector.detector import detect
 from parser.packet_parser import parse_packet
 from scapy.all import sniff, get_if_list
-
+from stats.packet_stats import update_statistics
 
 def list_interfaces():
     return get_if_list()
@@ -17,6 +17,8 @@ def handle_packet(packet):
 
     if parsed:
         print("3. Calling detector")
+        update_statistics(parsed)
+
         detect(parsed)
 
     print("4. Done")
