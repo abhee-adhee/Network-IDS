@@ -1,4 +1,5 @@
 # Detection Rules
+
 from collections import defaultdict
 
 # -----------------------------
@@ -17,21 +18,19 @@ port_scan_tracker = defaultdict(set)
 # -----------------------------
 
 def syn_flood_rule(packet):
-    if packet.protocol == "TCP":
-        return {
-            "type": "TCP Packet",
-            "source": packet.src_ip,
-            "severity": "LOW"
-        }
+
+    # Only inspect TCP packets
     if packet.protocol != "TCP":
         return None
 
+    # Only SYN packets
     if packet.tcp_flags != "S":
         return None
 
     syn_counter[packet.src_ip] += 1
 
     if syn_counter[packet.src_ip] >= 10:
+
         return {
             "type": "SYN Flood",
             "source": packet.src_ip,
@@ -47,12 +46,19 @@ def syn_flood_rule(packet):
 
 def port_scan_rule(packet):
 
+    # Only inspect TCP packets
     if packet.protocol != "TCP":
         return None
 
+    # Ignore packets without a destination port
+    if packet.dst_port is None:
+        return None
+
+    # Store unique destination ports contacted by this source
     port_scan_tracker[packet.src_ip].add(packet.dst_port)
 
     if len(port_scan_tracker[packet.src_ip]) >= 10:
+
         return {
             "type": "Port Scan",
             "source": packet.src_ip,
