@@ -1,11 +1,12 @@
 import os
 from collections import Counter
-from flask import Flask, render_template, jsonify, send_file
+from flask import Flask, render_template, jsonify, send_file, request
 
 from database.database import get_all_alerts, get_total_alerts, get_high_alerts, get_top_attacker
 from stats.packet_stats import get_statistics
 from reports.generator import generate_report
 from reports.pdf_generator import generate_pdf_report
+from config.rule_loader import load_rules, save_rules
 
 app = Flask(__name__)
 
@@ -13,6 +14,60 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/settings", methods=["GET", "POST"])
+def settings():
+    success_msg = None
+    error_msg = None
+    
+    # Load current rules
+    rules = load_rules()
+    print("DEBUG:", rules)
+    if request.method == "POST":
+        try:
+            # Parse form data and validate
+            new_rules = {
+                "syn_flood": {
+                    "enabled": request.form.get("syn_flood_enabled") == "on",
+                    "threshold": int(request.form.get("syn_flood_threshold", 10)),
+                    "severity": request.form.get("syn_flood_severity", "HIGH")
+                },
+                "port_scan": {
+                    "enabled": request.form.get("port_scan_enabled") == "on",
+                    "threshold": int(request.form.get("port_scan_threshold", 10)),
+                    "severity": request.form.get("port_scan_severity", "HIGH")
+                }
+            }
+            
+            # Validation
+            valid_severities = ["LOW", "MEDIUM", "HIGH"]
+            is_valid = True
+            
+            for rule_name, config in new_rules.items():
+                if config["threshold"] < 1 or config["threshold"] > 10000:
+                    error_msg = f"Invalid threshold for {rule_name.replace('_', ' ').title()}. Must be between 1 and 10000."
+                    is_valid = False
+                    break
+                if config["severity"] not in valid_severities:
+                    error_msg = f"Invalid severity for {rule_name.replace('_', ' ').title()}."
+                    is_valid = False
+                    break
+            
+            if is_valid:
+                # Save rules
+                saved = save_rules(new_rules)
+                if saved:
+                    success_msg = "Configuration Saved Successfully"
+                    rules = new_rules  # Update template with new values
+                else:
+                    error_msg = "Unable to save configuration"
+                    
+        except ValueError:
+            error_msg = "Invalid threshold value. Please enter a valid number."
+            
+    return render_template("settings.html", rules=rules, success_msg=success_msg, error_msg=error_msg)
+
 
 
 @app.route("/api/dashboard-data")

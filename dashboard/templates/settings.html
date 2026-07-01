@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule Configuration - Sentinel IDS</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="bi bi-shield-lock-fill text-accent fs-3 me-2"></i>
+                <span>SENTINEL <span class="text-accent">IDS</span></span>
+            </a>
+            <div class="d-flex align-items-center">
+                <a href="/" class="btn btn-outline-light btn-sm me-4">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
+                <span class="text-muted small font-monospace">
+                    <i class="bi bi-gear-fill me-1"></i> Rule Configuration
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5" style="max-width: 900px;">
+        
+        <div class="mb-4 d-flex justify-content-between align-items-end">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="bi bi-sliders me-2 text-accent"></i>Detection Rules</h2>
+                <p class="text-muted mb-0">Configure thresholds and severity levels for Sentinel IDS algorithms.</p>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% if success_msg %}
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> {{ success_msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        
+        {% if error_msg %}
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error_msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/settings">
+            
+            <!-- SYN Flood Rule Card -->
+            <div class="card mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">SYN Flood Detection</h5>
+                    <div class="form-check form-switch fs-5 mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="synFloodEnabled" name="syn_flood_enabled" {% if rules.syn_flood.enabled %}checked{% endif %}>
+                        <label class="form-check-label fs-6 ms-1" for="synFloodEnabled">Enable Rule</label>
+                    </div>
+                </div>
+                <div class="card-body py-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small">PACKET THRESHOLD</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-123"></i></span>
+                                <input type="number" class="form-control" name="syn_flood_threshold" value="{{ rules.syn_flood.threshold }}" min="1" max="10000" required>
+                            </div>
+                            <div class="form-text">Number of SYN packets from a single IP before alerting. (1 - 10000)</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small">SEVERITY LEVEL</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-exclamation-octagon"></i></span>
+                                <select class="form-select" name="syn_flood_severity" required>
+                                    <option value="LOW" {% if rules.syn_flood.severity == 'LOW' %}selected{% endif %}>Low</option>
+                                    <option value="MEDIUM" {% if rules.syn_flood.severity == 'MEDIUM' %}selected{% endif %}>Medium</option>
+                                    <option value="HIGH" {% if rules.syn_flood.severity == 'HIGH' %}selected{% endif %}>High</option>
+                                </select>
+                            </div>
+                            <div class="form-text">The severity level assigned when this rule triggers.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Port Scan Rule Card -->
+            <div class="card mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Port Scan Detection</h5>
+                    <div class="form-check form-switch fs-5 mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="portScanEnabled" name="port_scan_enabled" {% if rules.port_scan.enabled %}checked{% endif %}>
+                        <label class="form-check-label fs-6 ms-1" for="portScanEnabled">Enable Rule</label>
+                    </div>
+                </div>
+                <div class="card-body py-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small">PORT THRESHOLD</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-123"></i></span>
+                                <input type="number" class="form-control" name="port_scan_threshold" value="{{ rules.port_scan.threshold }}" min="1" max="10000" required>
+                            </div>
+                            <div class="form-text">Number of unique destination ports contacted before alerting. (1 - 10000)</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small">SEVERITY LEVEL</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-exclamation-octagon"></i></span>
+                                <select class="form-select" name="port_scan_severity" required>
+                                    <option value="LOW" {% if rules.port_scan.severity == 'LOW' %}selected{% endif %}>Low</option>
+                                    <option value="MEDIUM" {% if rules.port_scan.severity == 'MEDIUM' %}selected{% endif %}>Medium</option>
+                                    <option value="HIGH" {% if rules.port_scan.severity == 'HIGH' %}selected{% endif %}>High</option>
+                                </select>
+                            </div>
+                            <div class="form-text">The severity level assigned when this rule triggers.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Action -->
+            <div class="d-flex justify-content-end mb-5">
+                <a href="/" class="btn btn-outline-secondary me-3">Cancel</a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-floppy me-2"></i> Save Configuration
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- Bootstrap JS (required for dismissible alerts) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

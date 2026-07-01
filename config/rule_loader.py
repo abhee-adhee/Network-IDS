@@ -49,3 +49,18 @@ def load_rules(config_path="config/rules.json"):
     except (json.JSONDecodeError, IOError, Exception):
         # Gracefully handle malformed JSON or read errors
         return DEFAULT_RULES.copy()
+
+def save_rules(rules_data, config_path="config/rules.json"):
+    """
+    Saves detection rules to the JSON configuration file.
+    Returns True on success, False on error.
+    """
+    try:
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(config_path), exist_ok=True)
+        
+        with open(config_path, "w") as f:
+            json.dump(rules_data, f, indent=4)
+        return True
+    except IOError:
+        return False
