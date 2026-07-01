@@ -1,6 +1,10 @@
 # Detection Rules
 
 from collections import defaultdict
+from config.rule_loader import load_rules
+
+# Load rules configuration once
+rules = load_rules()
 
 # -----------------------------
 # Rule State
@@ -19,6 +23,11 @@ port_scan_tracker = defaultdict(set)
 
 def syn_flood_rule(packet):
 
+    rule_config = rules.get("syn_flood", {})
+    
+    if not rule_config.get("enabled", True):
+        return None
+
     # Only inspect TCP packets
     if packet.protocol != "TCP":
         return None
@@ -29,12 +38,12 @@ def syn_flood_rule(packet):
 
     syn_counter[packet.src_ip] += 1
 
-    if syn_counter[packet.src_ip] >= 10:
+    if syn_counter[packet.src_ip] >= rule_config.get("threshold", 10):
 
         return {
             "type": "SYN Flood",
             "source": packet.src_ip,
-            "severity": "HIGH"
+            "severity": rule_config.get("severity", "HIGH")
         }
 
     return None
@@ -45,6 +54,11 @@ def syn_flood_rule(packet):
 # -----------------------------
 
 def port_scan_rule(packet):
+
+    rule_config = rules.get("port_scan", {})
+    
+    if not rule_config.get("enabled", True):
+        return None
 
     # Only inspect TCP packets
     if packet.protocol != "TCP":
@@ -57,12 +71,12 @@ def port_scan_rule(packet):
     # Store unique destination ports contacted by this source
     port_scan_tracker[packet.src_ip].add(packet.dst_port)
 
-    if len(port_scan_tracker[packet.src_ip]) >= 10:
+    if len(port_scan_tracker[packet.src_ip]) >= rule_config.get("threshold", 10):
 
         return {
             "type": "Port Scan",
             "source": packet.src_ip,
-            "severity": "HIGH"
+            "severity": rule_config.get("severity", "HIGH")
         }
 
     return None

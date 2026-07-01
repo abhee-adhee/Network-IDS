@@ -1,0 +1,12 @@
+{
+    "syn_flood": {
+        "enabled": true,
+        "threshold": 15,
+        "severity": "HIGH"
+    },
+    "port_scan": {
+        "enabled": true,
+        "threshold": 10,
+        "severity": "HIGH"
+    }
+}
