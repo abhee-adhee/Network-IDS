@@ -1,0 +1,266 @@
+/* 
+   Sentinel IDS - Custom Styles 
+   Theme: Dark, Cybersecurity Blue Accents
+*/
+
+:root {
+    --bg-dark: #0b0f19;
+    --card-bg: #151b2b;
+    --accent-blue: #0d6efd;
+    --accent-blue-hover: #0b5ed7;
+    --text-primary: #f8f9fa;
+    --text-muted: #adb5bd; /* Lightened for better readability on dark bg */
+    --border-color: #2c3246;
+    
+    --severity-high: #ff4d5a; /* Brighter red */
+    --severity-medium: #fd7e14;
+    --severity-low: #20c997; /* Brighter green/teal */
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Card Styling */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Stronger shadows */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+.card-header {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Typography & Colors */
+.text-accent {
+    color: var(--accent-blue);
+}
+
+.text-high {
+    color: var(--severity-high) !important;
+}
+
+.text-medium {
+    color: var(--severity-medium) !important;
+}
+
+.text-low {
+    color: var(--severity-low) !important;
+}
+
+/* Badges */
+.badge-high {
+    background-color: rgba(255, 77, 90, 0.15);
+    color: var(--severity-high);
+    border: 1px solid rgba(255, 77, 90, 0.4);
+}
+
+.badge-medium {
+    background-color: rgba(253, 126, 20, 0.15);
+    color: var(--severity-medium);
+    border: 1px solid rgba(253, 126, 20, 0.4);
+}
+
+.badge-low {
+    background-color: rgba(32, 201, 151, 0.15);
+    color: var(--severity-low);
+    border: 1px solid rgba(32, 201, 151, 0.4);
+}
+
+/* Table Styling */
+.table {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    margin-bottom: 0;
+}
+
+.table-dark {
+    background-color: transparent;
+}
+
+.table-dark tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.table th, .table td {
+    border-color: var(--border-color);
+    vertical-align: middle;
+    padding: 1rem 0.75rem; /* Better padding */
+}
+
+.table thead th {
+    background-color: var(--card-bg);
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3f4760;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #5a6482;
+}
+
+/* Navigation & Header */
+.navbar {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    background-color: var(--severity-low);
+    box-shadow: 0 0 8px var(--severity-low);
+    margin-right: 8px;
+}
+
+.status-indicator.offline {
+    background-color: var(--severity-high);
+    box-shadow: 0 0 8px var(--severity-high);
+}
+
+/* Summary Values */
+.summary-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+}
+
+.summary-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+
+/* Disabled Future Features */
+.card.disabled-feature {
+    opacity: 0.5;
+    border-style: dashed;
+    background-color: rgba(21, 27, 43, 0.5);
+}
+
+.card.disabled-feature:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Input Fields & Buttons */
+.form-control, .form-select, .input-group-text {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.input-group-text {
+    color: var(--text-muted);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+.custom-search .form-control {
+    border-left: none;
+}
+.custom-search .input-group-text {
+    border-right: none;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+.custom-search:focus-within .form-control,
+.custom-search:focus-within .input-group-text {
+    border-color: var(--accent-blue);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.custom-search:focus-within .form-control {
+    box-shadow: none; /* Let the border do the talking */
+}
+
+.form-control::placeholder {
+    color: #6c757d;
+}
+
+.btn-primary {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-blue-hover);
+    border-color: var(--accent-blue-hover);
+    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.4);
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+/* Spinner Animation */
+@keyframes spin { 
+    100% { transform: rotate(360deg); } 
+}
+.spin {
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}

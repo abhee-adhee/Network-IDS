@@ -1,277 +1,334 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel IDS - SOC Dashboard</title>
 
-    <title>Sentinel IDS Dashboard</title>
-
-    <meta http-equiv="refresh" content="3">
-
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
-<body class="bg-light">
+<body>
 
-<div class="container py-5">
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="bi bi-shield-lock-fill text-accent fs-3 me-2"></i>
+                <span>SENTINEL <span class="text-accent">IDS</span></span>
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-4 small">v0.7</span>
+                <div class="d-flex align-items-center me-4">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <span class="small text-success fw-medium" id="statusText">Monitoring Live</span>
+                </div>
+                <div class="text-muted small font-monospace">
+                    <i class="bi bi-clock me-1"></i> <span id="currentTime">--:--:--</span>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <!-- Header -->
+    <div class="container-fluid px-4 py-4">
 
-    <div class="text-center mb-5">
+        <!-- Summary Cards Row 1: Alerts -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-sm-6">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="summary-label">Total Alerts</h5>
+                                <div class="summary-value" id="valTotalAlerts">--</div>
+                            </div>
+                            <div class="p-3 bg-primary bg-opacity-10 rounded">
+                                <i class="bi bi-bell-fill text-primary fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <h1 class="display-4 fw-bold">
-            🛡 Sentinel IDS
-        </h1>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card h-100" style="border-left: 4px solid var(--severity-high);">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="summary-label text-high">High Severity</h5>
+                                <div class="summary-value text-high" id="valHighAlerts">--</div>
+                            </div>
+                            <div class="p-3 bg-danger bg-opacity-10 rounded">
+                                <i class="bi bi-shield-fill-x text-high fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <p class="lead text-muted">
-            Real-Time Network Intrusion Detection System
-        </p>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card h-100" style="border-left: 4px solid var(--severity-medium);">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="summary-label text-medium">Medium Severity</h5>
+                                <div class="summary-value text-medium" id="valMediumAlerts">--</div>
+                            </div>
+                            <div class="p-3 bg-warning bg-opacity-10 rounded">
+                                <i class="bi bi-shield-exclamation text-medium fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-sm-6">
+                <div class="card h-100" style="border-left: 4px solid var(--severity-low);">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="summary-label text-low">Low Severity</h5>
+                                <div class="summary-value text-low" id="valLowAlerts">--</div>
+                            </div>
+                            <div class="p-3 bg-success bg-opacity-10 rounded">
+                                <i class="bi bi-shield-check text-low fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards Row 2: Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h6 class="summary-label">Total Packets</h6>
+                        <h3 class="mt-2 mb-0" id="valTotalPackets">--</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h6 class="summary-label">Top Attacker</h6>
+                        <h3 class="mt-2 mb-0 text-accent font-monospace" id="valTopAttacker">--</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h6 class="summary-label">DB Status</h6>
+                        <h3 class="mt-2 mb-0 text-success"><i class="bi bi-database-check"></i></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h6 class="summary-label">Interface</h6>
+                        <h3 class="mt-2 mb-0 text-primary"><i class="bi bi-ethernet"></i> Live</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center py-3">
+                        <h6 class="mb-0"><i class="bi bi-graph-up-arrow me-2 text-accent"></i>Alerts Timeline</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header py-3">
+                        <h6 class="mb-0"><i class="bi bi-pie-chart-fill me-2 text-accent"></i>Protocol Distribution</h6>
+                    </div>
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                        <div class="chart-container">
+                            <canvas id="protocolChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header py-3">
+                        <h6 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2 text-accent"></i>Severity
+                            Distribution</h6>
+                    </div>
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                        <div class="chart-container">
+                            <canvas id="severityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-8">
+                <div class="card h-100">
+                    <div class="card-header py-3">
+                        <h6 class="mb-0"><i class="bi bi-bar-chart-line-fill me-2 text-accent"></i>Top Attackers</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="attackersChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts Table and Tools -->
+        <div class="row g-3 mb-4">
+
+            <!-- Table Tools / Filters -->
+            <div class="col-xl-3">
+
+                <!-- Reporting tools -->
+                <div class="card mb-3">
+                    <div class="card-header py-3">
+                        <h6 class="mb-0"><i class="bi bi-file-earmark-bar-graph me-2 text-accent"></i>Reports</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/export/txt" class="btn btn-outline-light btn-sm text-start" target="_blank">
+                                <i class="bi bi-filetype-txt text-secondary fs-5 me-2 align-middle"></i> Export TXT
+                                Report
+                            </a>
+                            <a href="/export/pdf" class="btn btn-outline-light btn-sm text-start" target="_blank">
+                                <i class="bi bi-filetype-pdf text-danger fs-5 me-2 align-middle"></i> Export PDF Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtering Tools -->
+                <div class="card mb-3">
+                    <div class="card-header py-3">
+                        <h6 class="mb-0"><i class="bi bi-funnel-fill me-2 text-accent"></i>Filter Alerts</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted fw-bold">SEARCH ALERTS</label>
+                            <div class="input-group input-group-sm custom-search">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="searchInput"
+                                    placeholder="IP, Type, or Time...">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted fw-bold">SEVERITY</label>
+                            <select class="form-select form-select-sm" id="severityFilter">
+                                <option value="ALL">All Severities</option>
+                                <option value="HIGH">High Only</option>
+                                <option value="MEDIUM">Medium Only</option>
+                                <option value="LOW">Low Only</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary btn-sm" id="refreshBtn">
+                                <i class="bi bi-arrow-repeat"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Future Features Placeholders -->
+                <div class="card disabled-feature mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center py-2">
+                        <span class="small"><i class="bi bi-hdd-network me-2 text-muted"></i>PCAP Analysis</span>
+                        <span class="badge bg-secondary">Coming Soon</span>
+                    </div>
+                </div>
+                <div class="card disabled-feature mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center py-2">
+                        <span class="small"><i class="bi bi-globe me-2 text-muted"></i>Threat Intel</span>
+                        <span class="badge bg-secondary">Coming Soon</span>
+                    </div>
+                </div>
+                <div class="card disabled-feature mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center py-2">
+                        <span class="small"><i class="bi bi-gear-fill me-2 text-muted"></i>Rule Config</span>
+                        <span class="badge bg-secondary">Coming Soon</span>
+                    </div>
+                </div>
+                <div class="card disabled-feature">
+                    <div class="card-body d-flex justify-content-between align-items-center py-2">
+                        <span class="small"><i class="bi bi-hdd-rack me-2 text-muted"></i>REST API</span>
+                        <span class="badge bg-secondary">Coming Soon</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Alerts Table -->
+            <div class="col-xl-9">
+                <div class="card h-100">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="bi bi-list-columns-reverse me-2 text-accent"></i>Recent Alerts</h6>
+                        <span class="badge bg-secondary rounded-pill fw-normal" id="tableStatus">Live Updates
+                            Enabled</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 500px;">
+                            <table class="table table-dark table-hover mb-0 border-0">
+                                <thead class="sticky-top bg-dark">
+                                    <tr>
+                                        <th class="ps-4">Timestamp</th>
+                                        <th>Alert Type</th>
+                                        <th>Source IP</th>
+                                        <th class="pe-4">Severity</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="alertsTableBody">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">
+                                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                            Loading alerts...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-4 pb-4 text-center text-muted small">
+            <hr class="border-secondary opacity-25">
+            <p class="mb-1">Sentinel IDS v0.7 &copy; 2026</p>
+            <p class="opacity-50">Built with Python, Flask, Scapy, and SQLite.</p>
+        </footer>
 
     </div>
 
-    <!-- Statistics -->
-<div class="row g-4 mt-2">
-
-<div class="col-md-3">
-
-<div class="card shadow">
-
-<div class="card-body text-center">
-
-<h5>Total Packets</h5>
-
-<h2>{{ stats.total_packets }}</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-md-3">
-
-<div class="card shadow">
-
-<div class="card-body text-center">
-
-<h5>TCP</h5>
-
-<h2>{{ stats.tcp }}</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-md-3">
-
-<div class="card shadow">
-
-<div class="card-body text-center">
-
-<h5>UDP</h5>
-
-<h2>{{ stats.udp }}</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-md-3">
-
-<div class="card shadow">
-
-<div class="card-body text-center">
-
-<h5>ICMP</h5>
-
-<h2>{{ stats.icmp }}</h2>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-    <div class="row g-4 mb-5">
-
-        <div class="col-md-3">
-
-            <div class="card text-bg-dark shadow">
-
-                <div class="card-body text-center">
-
-                    <h5>Status</h5>
-
-                    <h3>🟢 Monitoring</h3>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-md-3">
-
-            <div class="card text-bg-primary shadow">
-
-                <div class="card-body text-center">
-
-                    <h5>Total Alerts</h5>
-
-                    <h1>{{ total }}</h1>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-md-3">
-
-            <div class="card text-bg-danger shadow">
-
-                <div class="card-body text-center">
-
-                    <h5>High Severity</h5>
-
-                    <h1>{{ high }}</h1>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-md-3">
-
-            <div class="card text-bg-success shadow">
-
-                <div class="card-body text-center">
-
-                    <h5>Top Attacker</h5>
-
-                    <h6 class="mt-3">{{ top }}</h6>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- Alerts Table -->
-
-    <div class="card shadow">
-
-        <div class="card-header bg-dark text-white">
-
-            <h4 class="mb-0">
-                🚨 Recent Alerts
-            </h4>
-
-        </div>
-
-        <div class="card-body">
-
-            <div class="table-responsive">
-
-                <table class="table table-hover table-bordered align-middle">
-
-                    <thead class="table-dark">
-
-                    <tr>
-
-                        <th>Time</th>
-                        <th>Alert Type</th>
-                        <th>Source IP</th>
-                        <th>Severity</th>
-
-                    </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                    {% for alert in alerts %}
-
-                    <tr>
-
-                        <td>{{ alert[0] }}</td>
-
-                        <td>{{ alert[1] }}</td>
-
-                        <td>{{ alert[2] }}</td>
-
-                        <td>
-
-                            {% if alert[3] == "HIGH" %}
-
-                                <span class="badge bg-danger">
-                                    🔴 HIGH
-                                </span>
-
-                            {% elif alert[3] == "MEDIUM" %}
-
-                                <span class="badge bg-warning text-dark">
-                                    🟡 MEDIUM
-                                </span>
-
-                            {% else %}
-
-                                <span class="badge bg-success">
-                                    🟢 LOW
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- Footer -->
-
-    <footer class="text-center mt-5 text-muted">
-
-        <hr>
-
-        <p class="mb-1">
-
-            Sentinel IDS v0.3
-
-        </p>
-
-        <small>
-
-            Built with Python • Flask • Scapy • SQLite
-
-        </small>
-
-    </footer>
-
-</div>
-
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom JS -->
+    <script src="/static/js/script.js"></script>
 </body>
 
 </html>
-             
