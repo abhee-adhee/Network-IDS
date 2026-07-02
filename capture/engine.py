@@ -2,7 +2,7 @@ from detector.detector import detect
 from parser.packet_parser import parse_packet
 from scapy.all import sniff, get_if_list
 from stats.packet_stats import update_statistics
-
+from sources.packet_pipeline import process_packet
 # ---------------------------------
 # Configuration
 # ---------------------------------
@@ -24,18 +24,7 @@ def list_interfaces():
 
 def handle_packet(packet):
 
-    parsed = parse_packet(packet)
-
-    # Ignore unsupported packets
-    if parsed is None:
-        return
-
-    if DEBUG:
-        print(parsed)
-
-    update_statistics(parsed)
-
-    detect(parsed)
+    process_packet(packet)
 
 
 # ---------------------------------

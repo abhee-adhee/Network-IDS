@@ -6,7 +6,7 @@ def raise_alert(alert):
 
     print("🔥 ALERT MANAGER CALLED 🔥")
 
-    alert["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    alert["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
     print("\n" + "=" * 50)
     print("🚨 SECURITY ALERT")

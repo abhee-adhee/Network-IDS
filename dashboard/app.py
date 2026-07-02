@@ -3,7 +3,13 @@ from collections import Counter
 from flask import Flask, render_template, jsonify, send_file, request
 
 from database.database import get_all_alerts, get_total_alerts, get_high_alerts, get_top_attacker
-from stats.packet_stats import get_statistics
+from database.database import (
+    get_all_alerts,
+    get_total_alerts,
+    get_high_alerts,
+    get_top_attacker,
+    get_statistics_db
+)
 from reports.generator import generate_report
 from reports.pdf_generator import generate_pdf_report
 from config.rule_loader import load_rules, save_rules
@@ -76,7 +82,7 @@ def dashboard_data():
     total_alerts = get_total_alerts()
     high_alerts = get_high_alerts()
     top_attacker = get_top_attacker()
-    stats = get_statistics()
+    stats = get_statistics_db()
 
     # Calculate Medium and Low alerts from all alerts (format: [timestamp, type, ip, severity])
     medium_alerts = sum(1 for alert in alerts if alert[3] == "MEDIUM")

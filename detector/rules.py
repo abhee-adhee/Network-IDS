@@ -24,7 +24,7 @@ port_scan_tracker = defaultdict(set)
 def syn_flood_rule(packet):
 
     rule_config = rules.get("syn_flood", {})
-    
+
     if not rule_config.get("enabled", True):
         return None
 
@@ -56,12 +56,16 @@ def syn_flood_rule(packet):
 def port_scan_rule(packet):
 
     rule_config = rules.get("port_scan", {})
-    
+
     if not rule_config.get("enabled", True):
         return None
 
     # Only inspect TCP packets
     if packet.protocol != "TCP":
+        return None
+
+    # Only SYN packets represent new connection attempts
+    if packet.tcp_flags != "S":
         return None
 
     # Ignore packets without a destination port

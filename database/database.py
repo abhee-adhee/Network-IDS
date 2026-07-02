@@ -17,9 +17,26 @@ def initialize_database():
         severity TEXT
     )
     """)
-
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS statistics(
+    id INTEGER PRIMARY KEY,
+    total_packets INTEGER DEFAULT 0,
+    tcp INTEGER DEFAULT 0,
+    udp INTEGER DEFAULT 0,
+    icmp INTEGER DEFAULT 0,
+    unique_ips INTEGER DEFAULT 0
+    )
+    """)
+    cursor.execute("""
+    INSERT OR IGNORE INTO statistics
+    (id, total_packets, tcp, udp, icmp, unique_ips)
+    VALUES
+    (1,0,0,0,0,0)
+    """)
+    
     conn.commit()
     conn.close()
+
 def get_total_alerts():
 
     conn = sqlite3.connect(DB_NAME)
@@ -119,3 +136,98 @@ def get_all_alerts():
     conn.close()
 
     return alerts
+# -----------------------------
+# Statistics Database Helpers
+# -----------------------------
+
+# -----------------------------
+# Statistics Database Helpers
+# -----------------------------
+
+def get_statistics_db():
+
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            total_packets,
+            tcp,
+            udp,
+            icmp,
+            unique_ips
+        FROM statistics
+        WHERE id = 1
+    """)
+
+    row = cursor.fetchone()
+
+    conn.close()
+
+    if row is None:
+        return {
+            "total_packets": 0,
+            "tcp": 0,
+            "udp": 0,
+            "icmp": 0,
+            "unique_ips": 0
+        }
+
+    return {
+
+        "total_packets": row[0],
+        "tcp": row[1],
+        "udp": row[2],
+        "icmp": row[3],
+        "unique_ips": row[4]
+    }
+
+
+def update_statistics_db(
+    total_packets,
+    tcp,
+    udp,
+    icmp,
+    unique_ips
+):
+
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE statistics
+        SET
+            total_packets = ?,
+            tcp = ?,
+            udp = ?,
+            icmp = ?,
+            unique_ips = ?
+        WHERE id = 1
+    """, (
+        total_packets,
+        tcp,
+        udp,
+        icmp,
+        unique_ips
+    ))
+
+    conn.commit()
+    conn.close()
+def reset_statistics_db():
+
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE statistics
+        SET
+            total_packets = 0,
+            tcp = 0,
+            udp = 0,
+            icmp = 0,
+            unique_ips = 0
+        WHERE id = 1
+    """)
+
+    conn.commit()
+    conn.close()
