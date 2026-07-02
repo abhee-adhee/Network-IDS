@@ -2,6 +2,13 @@ from scapy.all import rdpcap
 
 from sources.packet_pipeline import process_packet
 
+from database.database import (
+    get_statistics_db,
+    get_total_alerts,
+    get_high_alerts,
+    get_top_attacker,
+)
+
 
 def analyze_pcap(file_path):
     """
@@ -27,20 +34,30 @@ def analyze_pcap(file_path):
 
     total_packets = len(packets)
 
+    stats = get_statistics_db()
+
     print("\n" + "=" * 55)
-    print("Offline PCAP Analysis")
+    print("        Sentinel PCAP Analysis Summary")
     print("=" * 55)
-    print(f"File          : {file_path}")
-    print(f"Total Packets : {total_packets}")
-    print("=" * 55 + "\n")
 
-    for index, packet in enumerate(packets, start=1):
+    print(f"File                : {file_path}")
+    print(f"Packets Processed   : {total_packets}")
 
-        process_packet(packet)
+    print()
+    print(f"Total Alerts        : {get_total_alerts()}")
+    print(f"High Severity       : {get_high_alerts()}")
 
-        if index % 100 == 0 or index == total_packets:
-            print(f"Processed {index}/{total_packets} packets")
+    print()
+    print("Protocol Statistics")
+    print("-" * 25)
 
-    print("\n" + "=" * 55)
-    print("PCAP Analysis Complete")
+    print(f"TCP                 : {stats['tcp']}")
+    print(f"UDP                 : {stats['udp']}")
+    print(f"ICMP                : {stats['icmp']}")
+
+    print()
+    print(f"Unique IPs          : {stats['unique_ips']}")
+    print(f"Top Attacker        : {get_top_attacker()}")
+
+    print("\nAnalysis Completed Successfully")
     print("=" * 55)
