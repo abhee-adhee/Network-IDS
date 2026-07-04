@@ -1,8 +1,8 @@
 import os
 from collections import Counter
 from flask import Flask, render_template, jsonify, send_file, request
+from werkzeug.utils import secure_filename
 
-from database.database import get_all_alerts, get_total_alerts, get_high_alerts, get_top_attacker
 from database.database import (
     get_all_alerts,
     get_total_alerts,
@@ -13,8 +13,17 @@ from database.database import (
 from reports.generator import generate_report
 from reports.pdf_generator import generate_pdf_report
 from config.rule_loader import load_rules, save_rules
+from sources.pcap_reader import analyze_pcap
+
+UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "uploads"))
+ALLOWED_EXTENSIONS = {".pcap"}
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024  # 200 MB max upload
+
+@app.errorhandler(413)
+def request_entity_too_large(e):
+    return jsonify({"error": "File too large. Maximum upload size is 200 MB."}), 413
 
 
 @app.route("/")
@@ -128,11 +137,30 @@ def dashboard_data():
     })
 
 
+from flask import request, jsonify
+
+@app.route("/upload-pcap", methods=["POST"])
+def upload_pcap():
+
+    print("START", flush=True)
+
+    data = request.get_data(cache=True)
+
+    print("LEN =", len(data), flush=True)
+
+    return jsonify({"ok": True})
+
+
 @app.route("/export/txt")
 def export_txt():
     report_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "reports", "report.txt"))
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
-    generate_report(filename=report_path)
+    generate_report(
+        filename=report_path,
+        analysis_type=app.config.get("last_analysis_type", "Live Capture"),
+        pcap_filename=app.config.get("last_pcap_filename"),
+        packets_processed=app.config.get("last_packets_processed"),
+    )
     return send_file(report_path, as_attachment=True)
 
 
@@ -140,7 +168,12 @@ def export_txt():
 def export_pdf():
     report_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "reports", "Sentinel_Report.pdf"))
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
-    generate_pdf_report(filename=report_path)
+    generate_pdf_report(
+        filename=report_path,
+        analysis_type=app.config.get("last_analysis_type", "Live Capture"),
+        pcap_filename=app.config.get("last_pcap_filename"),
+        packets_processed=app.config.get("last_packets_processed"),
+    )
     return send_file(report_path, as_attachment=True)
 
 

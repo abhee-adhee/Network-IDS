@@ -19,20 +19,31 @@ def analyze_pcap(file_path):
     """
 
     try:
-
         packets = rdpcap(file_path)
 
     except FileNotFoundError:
-
         print(f"\nPCAP file not found:\n{file_path}")
         return
 
     except Exception as e:
-
         print(f"\nUnable to read PCAP:\n{e}")
         return
 
     total_packets = len(packets)
+
+    print(f"\nProcessing {total_packets} packets...\n")
+
+    # Process every packet through the same pipeline used for live capture
+    for index, packet in enumerate(packets, start=1):
+
+        parsed = process_packet(packet)
+
+        print(f"Packet {index}: {parsed}")
+
+        if index % 100 == 0 or index == total_packets:
+            print(f"Processed {index}/{total_packets} packets")
+
+    print("\nFinished processing all packets.\n")
 
     stats = get_statistics_db()
 
@@ -61,3 +72,5 @@ def analyze_pcap(file_path):
 
     print("\nAnalysis Completed Successfully")
     print("=" * 55)
+
+    return total_packets

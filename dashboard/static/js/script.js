@@ -7,14 +7,14 @@ let charts = {};
 document.addEventListener("DOMContentLoaded", () => {
     initCharts();
     fetchDashboardData();
-    
+
     // Auto-refresh every 5 seconds
     setInterval(fetchDashboardData, 5000);
-    
+
     // Setup event listeners for filtering
     document.getElementById("searchInput").addEventListener("keyup", renderAlertsTable);
     document.getElementById("severityFilter").addEventListener("change", renderAlertsTable);
-    
+
     // Manual refresh button
     document.getElementById("refreshBtn").addEventListener("click", () => {
         const btn = document.getElementById("refreshBtn");
@@ -25,11 +25,115 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 500);
         });
     });
-    
+
     // Update live clock
     setInterval(updateClock, 1000);
     updateClock();
+
+    // PCAP Upload Form handler
+    const pcapForm = document.getElementById("pcapUploadForm");
+    if (pcapForm) {
+        pcapForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById("pcapFileInput");
+            const analyzeBtn = document.getElementById("pcapAnalyzeBtn");
+            const statusMsg = document.getElementById("pcapStatusMsg");
+
+            // Validate file selection
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showPcapStatus(statusMsg, "error", "Please select a .pcap file first.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (!file.name.toLowerCase().endsWith(".pcap")) {
+                showPcapStatus(statusMsg, "error", "Invalid file type. Only .pcap files are supported.");
+                return;
+            }
+
+            // Uploading state
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i>Uploading...';
+            showPcapStatus(statusMsg, "loading", '<i class="bi bi-hourglass-split me-2"></i>Analyzing packets, please wait...');
+
+            try {
+                const formData = new FormData();
+
+                formData.append(
+                    "pcap_file",
+                    fileInput.files[0]
+                );
+                const response = await fetch("/upload-pcap", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    const detail = data.message || "Analysis complete. Check the alerts table for results.";
+                    showPcapStatus(statusMsg, "success", `<i class="bi bi-check-circle-fill me-2"></i>${detail}`);
+                    pcapForm.reset();
+                    // Refresh dashboard, show banner, update Analysis Type indicator
+                    await fetchDashboardData();
+                    showPcapBanner();
+                    setAnalysisType("offline");
+                } else {
+                    const data = await response.json().catch(() => ({}));
+                    const detail = data.error || "Unable to process the file. Please try again.";
+                    showPcapStatus(statusMsg, "error", `<i class="bi bi-exclamation-triangle-fill me-2"></i>${detail}`);
+                }
+            } catch (err) {
+                showPcapStatus(statusMsg, "error", '<i class="bi bi-wifi-off me-2"></i>Connection error. Is the dashboard server running?');
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="bi bi-play-circle-fill me-2"></i>Analyze PCAP';
+            }
+        });
+    }
 });
+
+function showPcapStatus(el, type, html) {
+    const classMap = {
+        success: "pcap-status-success",
+        error: "pcap-status-error",
+        loading: "pcap-status-loading"
+    };
+    el.className = classMap[type] || "";
+    el.innerHTML = html;
+    el.style.display = "block";
+}
+
+// Show the top "Offline Analysis Completed" success banner
+function showPcapBanner() {
+    const banner = document.getElementById("pcapBannerMsg");
+    if (!banner) return;
+    // Remove the inline display:none override, then trigger Bootstrap fade-in
+    banner.style.removeProperty("display");
+    banner.classList.add("show");
+    // Auto-dismiss after 8 seconds
+    setTimeout(() => {
+        banner.classList.remove("show");
+        setTimeout(() => { banner.style.setProperty("display", "none", "important"); }, 300);
+    }, 8000);
+}
+
+// Update the Analysis Type summary card
+function setAnalysisType(mode) {
+    const label = document.getElementById("valAnalysisTypeLabel");
+    const icon = document.querySelector("#valAnalysisType i");
+    if (!label || !icon) return;
+
+    if (mode === "offline") {
+        icon.className = "bi bi-hdd-network-fill text-warning";
+        label.className = "text-warning";
+        label.textContent = " Offline PCAP";
+    } else {
+        icon.className = "bi bi-ethernet text-primary";
+        label.className = "text-primary";
+        label.textContent = " Live Capture";
+    }
+}
 
 function updateClock() {
     const now = new Date();
@@ -127,9 +231,9 @@ function initCharts() {
         },
         options: {
             ...commonOptions,
-            plugins: { 
+            plugins: {
                 ...commonOptions.plugins,
-                legend: { display: false } 
+                legend: { display: false }
             }
         }
     });
@@ -162,25 +266,25 @@ function initCharts() {
 async function fetchDashboardData() {
     try {
         const response = await fetch('/api/dashboard-data');
-        
+
         if (!response.ok) throw new Error('API Error');
-        
+
         const data = await response.json();
-        
+
         // Update connection status
         updateConnectionStatus(true);
-        
+
         // Update Summary Cards
         updateSummaryCards(data);
-        
+
         // Update Charts
         updateCharts(data.charts);
         updateTimelineChart(data.recent_alerts);
-        
+
         // Update Alerts Table
         alertsData = data.recent_alerts;
         renderAlertsTable();
-        
+
     } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
         updateConnectionStatus(false);
@@ -190,7 +294,7 @@ async function fetchDashboardData() {
 function updateConnectionStatus(isConnected) {
     const statusDot = document.getElementById('statusIndicator');
     const statusText = document.getElementById('statusText');
-    
+
     if (isConnected) {
         statusDot.classList.remove('offline');
         statusText.innerText = "Monitoring Live";
@@ -209,7 +313,7 @@ function updateSummaryCards(data) {
     document.getElementById('valHighAlerts').innerText = data.alert_stats.high;
     document.getElementById('valMediumAlerts').innerText = data.alert_stats.medium;
     document.getElementById('valLowAlerts').innerText = data.alert_stats.low;
-    
+
     document.getElementById('valTotalPackets').innerText = data.stats.total_packets;
     document.getElementById('valTopAttacker').innerText = data.top_attacker;
 }
@@ -234,7 +338,7 @@ function updateCharts(chartData) {
     // Attackers Chart
     const attackerIps = Object.keys(chartData.top_attackers);
     const attackerCounts = Object.values(chartData.top_attackers);
-    
+
     charts.attackers.data.labels = attackerIps;
     charts.attackers.data.datasets[0].data = attackerCounts;
     charts.attackers.update();
@@ -244,25 +348,25 @@ function updateTimelineChart(recentAlerts) {
     // Group alerts by hour (or just show the last 10 alerts for simplicity)
     // For a simple timeline, let's reverse the top 10 alerts and plot them
     const latest = [...recentAlerts].slice(0, 15).reverse();
-    
+
     charts.timeline.data.labels = latest.map(a => a[0].split(' ')[1] || a[0]); // Time portion
     charts.timeline.data.datasets[0].data = latest.map((a, i) => i + 1); // Mock cumulative or just scatter
-    
+
     // To make it an actual timeline of counts, we would group by time. 
     // Let's do a simple grouping by minute.
     const countsByMinute = {};
     recentAlerts.forEach(alert => {
         const timeParts = alert[0].split(':');
-        if(timeParts.length >= 2) {
+        if (timeParts.length >= 2) {
             const minute = timeParts[0] + ':' + timeParts[1];
             countsByMinute[minute] = (countsByMinute[minute] || 0) + 1;
         }
     });
-    
+
     const sortedMinutes = Object.keys(countsByMinute).sort().slice(-10);
     charts.timeline.data.labels = sortedMinutes;
     charts.timeline.data.datasets[0].data = sortedMinutes.map(m => countsByMinute[m]);
-    
+
     charts.timeline.update();
 }
 
@@ -270,31 +374,31 @@ function renderAlertsTable() {
     const searchTerm = document.getElementById("searchInput").value.toLowerCase();
     const severityFilter = document.getElementById("severityFilter").value;
     const tbody = document.getElementById("alertsTableBody");
-    
+
     tbody.innerHTML = "";
-    
+
     const filteredAlerts = alertsData.filter(alert => {
         const time = alert[0].toLowerCase();
         const type = alert[1].toLowerCase();
         const ip = alert[2].toLowerCase();
         const severity = alert[3];
-        
+
         const matchesSearch = time.includes(searchTerm) || type.includes(searchTerm) || ip.includes(searchTerm);
         const matchesSeverity = (severityFilter === "ALL") || (severity === severityFilter);
-        
+
         return matchesSearch && matchesSeverity;
     });
-    
+
     if (filteredAlerts.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">No alerts found matching your criteria.</td></tr>`;
         return;
     }
-    
+
     filteredAlerts.forEach(alert => {
         const severity = alert[3];
         let badgeClass = "badge-low";
         let icon = "bi-shield-check";
-        
+
         if (severity === "HIGH") {
             badgeClass = "badge-high";
             icon = "bi-shield-fill-x";
@@ -302,7 +406,7 @@ function renderAlertsTable() {
             badgeClass = "badge-medium";
             icon = "bi-shield-exclamation";
         }
-        
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${alert[0]}</td>

@@ -39,6 +39,16 @@
 
     <div class="container-fluid px-4 py-4">
 
+        <!-- Offline Analysis Banner (hidden by default, shown after PCAP upload) -->
+        <div id="pcapBannerMsg" class="alert alert-success alert-dismissible fade d-flex align-items-center mb-4"
+            role="alert" style="display: none !important;">
+            <i class="bi bi-check-circle-fill flex-shrink-0 me-2 fs-5"></i>
+            <div>
+                <strong>Offline Analysis Completed.</strong> Dashboard statistics and alerts have been refreshed.
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <!-- Summary Cards Row 1: Alerts -->
         <div class="row g-3 mb-4">
             <div class="col-xl-3 col-sm-6">
@@ -135,8 +145,11 @@
             <div class="col-md-2">
                 <div class="card h-100">
                     <div class="card-body text-center">
-                        <h6 class="summary-label">Interface</h6>
-                        <h3 class="mt-2 mb-0 text-primary"><i class="bi bi-ethernet"></i> Live</h3>
+                        <h6 class="summary-label">Analysis Type</h6>
+                        <h3 class="mt-2 mb-0" id="valAnalysisType">
+                            <i class="bi bi-ethernet text-primary"></i>
+                            <span id="valAnalysisTypeLabel" class="text-primary"> Live Capture</span>
+                        </h3>
                     </div>
                 </div>
             </div>
@@ -199,6 +212,62 @@
             </div>
         </div>
 
+        <!-- PCAP Upload Section -->
+        <div class="row g-3 mb-4" id="pcapUpload">
+            <div class="col-12">
+                <div class="card pcap-upload-card">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="bi bi-hdd-network-fill me-2 text-accent"></i>Offline PCAP Analysis
+                        </h6>
+                        <span class="badge rounded-pill"
+                            style="background: rgba(13,110,253,0.15); color: #6ea8fe; border: 1px solid rgba(13,110,253,0.3); font-weight:600;">Offline
+                            Mode</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center g-4">
+
+                            <!-- Description -->
+                            <div class="col-xl-4">
+                                <p class="text-muted mb-2 small">Upload a captured <code>.pcap</code> file to run the
+                                    Sentinel detection engine offline. Alerts will be logged and visible in the table
+                                    below.</p>
+                                <p class="mb-0" style="font-size: 0.7rem; color: #6c757d;">
+                                    <i class="bi bi-info-circle me-1"></i>Supported format: <strong>.pcap</strong>
+                                </p>
+                            </div>
+
+                            <!-- Upload Form -->
+                            <div class="col-xl-5">
+                                <form id="pcapUploadForm" method="POST" action="/upload-pcap"
+                                    enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted fw-bold" for="pcapFileInput">SELECT
+                                            PCAP FILE</label>
+                                        <div class="input-group custom-search">
+                                            <span class="input-group-text"><i
+                                                    class="bi bi-file-earmark-binary"></i></span>
+                                            <input type="file" class="form-control" id="pcapFileInput" name="pcap_file"
+                                                accept=".pcap">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" id="pcapAnalyzeBtn">
+                                        <i class="bi bi-play-circle-fill me-2"></i>Analyze PCAP
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Status / Feedback -->
+                            <div class="col-xl-3">
+                                <div id="pcapStatusMsg" style="display: none;"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Alerts Table and Tools -->
         <div class="row g-3 mb-4">
 
@@ -255,12 +324,14 @@
                 </div>
 
                 <!-- Future Features Placeholders -->
-                <div class="card disabled-feature mb-2">
-                    <div class="card-body d-flex justify-content-between align-items-center py-2">
-                        <span class="small"><i class="bi bi-hdd-network me-2 text-muted"></i>PCAP Analysis</span>
-                        <span class="badge bg-secondary">Coming Soon</span>
+                <a href="#pcapUpload" class="text-decoration-none">
+                    <div class="card mb-2" style="background-color: rgba(255,255,255,0.05);">
+                        <div class="card-body d-flex justify-content-between align-items-center py-2">
+                            <span class="small text-primary"><i class="bi bi-hdd-network me-2"></i>PCAP Analysis</span>
+                            <i class="bi bi-chevron-right text-muted small"></i>
+                        </div>
                     </div>
-                </div>
+                </a>
                 <div class="card disabled-feature mb-2">
                     <div class="card-body d-flex justify-content-between align-items-center py-2">
                         <span class="small"><i class="bi bi-globe me-2 text-muted"></i>Threat Intel</span>
@@ -328,6 +399,8 @@
 
     </div>
 
+    <!-- Bootstrap JS (required for dismissible alerts) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom JS -->
